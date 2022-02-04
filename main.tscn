@@ -1,0 +1,56 @@
+[gd_scene load_steps=6 format=3 uid="uid://cd7ej4vb28n5g"]
+
+[ext_resource type="Script" path="res://MeshGen.gd" id="1_g5yc0"]
+[ext_resource type="Shader" path="res://hex.gdshader" id="2_yiw66"]
+[ext_resource type="Script" path="res://Terrain.gd" id="5_31uvi"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bu1sj"]
+render_priority = 0
+shader = ExtResource( "2_yiw66" )
+
+[sub_resource type="Environment" id="Environment_b4om2"]
+background_mode = 1
+background_color = Color(0.615686, 0.847059, 1, 1)
+background_energy = 0.68
+tonemap_mode = 1
+tonemap_exposure = 0.8
+
+[node name="Root" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0.000665555, -0.000383113, -0.000336549, 0.828236, 0.560379, 0.000690271, -0.560379, 0.828236, 0, 16.3348, 37.9405)
+
+[node name="Terrain" type="Node3D" parent="."]
+script = ExtResource( "5_31uvi" )
+speed = 0.5
+material = SubResource( "ShaderMaterial_bu1sj" )
+
+[node name="Chunk-1-0" type="Node3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -48)
+script = ExtResource( "1_g5yc0" )
+chunk_coord_x = 1
+
+[node name="Chunk-0-0" type="Node3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.4256, 0, -48)
+script = ExtResource( "1_g5yc0" )
+
+[node name="Chunk-0-1" type="Node3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.4256, 0, 0)
+script = ExtResource( "1_g5yc0" )
+chunk_coord_z = 1
+
+[node name="Chunk-1-1" type="Node3D" parent="Terrain"]
+script = ExtResource( "1_g5yc0" )
+chunk_coord_x = 1
+chunk_coord_z = 1
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Terrain"]
+transform = Transform3D(0.765048, -0.191764, 0.614759, -0.141171, 0.881471, 0.450643, -0.628309, -0.43155, 0.647296, 22.6038, 19.5467, 14.926)
+light_energy = 1.98
+shadow_enabled = true
+shadow_color = Color(0.0745098, 0.0509804, 0.101961, 1)
+shadow_bias = 0.106
+directional_shadow_mode = 0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( "Environment_b4om2" )
