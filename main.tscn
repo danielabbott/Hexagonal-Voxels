@@ -22,7 +22,7 @@ transform = Transform3D(1, 0.000665555, -0.000383113, -0.000336549, 0.828236, 0.
 
 [node name="Terrain" type="Node3D" parent="."]
 script = ExtResource( "5_31uvi" )
-speed = 0.5
+speed = 0.3
 material = SubResource( "ShaderMaterial_bu1sj" )
 
 [node name="Chunk-1-0" type="Node3D" parent="Terrain"]
@@ -48,7 +48,6 @@ chunk_coord_z = 1
 transform = Transform3D(0.765048, -0.191764, 0.614759, -0.141171, 0.881471, 0.450643, -0.628309, -0.43155, 0.647296, 22.6038, 19.5467, 14.926)
 light_energy = 1.98
 shadow_enabled = true
-shadow_color = Color(0.0745098, 0.0509804, 0.101961, 1)
 shadow_bias = 0.106
 directional_shadow_mode = 0
 

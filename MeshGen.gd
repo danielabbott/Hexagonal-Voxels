@@ -1,5 +1,4 @@
-# I was thinking these tesselated hexagon prisms could make an interesting map
-# for a shooter game or a voxel sandbox
+# Could make an interesting map for a shooter game or something
 
 extends Node3D
 
@@ -25,49 +24,48 @@ func _ready():
 	m.set_surface_override_material(0, get_parent().material)
 	add_child(m)
 	
-#	ResourceSaver.save("res://mesh-" + str(chunk_coord_x) + "-" + str(chunk_coord_z) + ".tres", \
+#	ResourceSaver.save("res://mesh-" + str(chunk_coord_x) + "-" + str(chunk_coord_z) + ".res", \
 #		arr_mesh, 32)
 
 func createChunk():
 	var voxel_chunk_data = PackedColorArray()
 	
-	var noise = OpenSimplexNoise.new()
+	var noise = FastNoiseLite.new()
 	noise.seed = get_parent().world_seed
-	noise.octaves = 4
-	noise.period = 50.0
-	noise.persistence = 1.0
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.fractal_octaves = 4
+	noise.frequency = 0.03
 	
-	var heightmap = noise.get_image(CHUNK_SIZE_Z, CHUNK_SIZE_X, \
-		Vector2(chunk_coord_z*CHUNK_SIZE_Z, chunk_coord_x*CHUNK_SIZE_X))
+	noise.offset = Vector3(chunk_coord_z*CHUNK_SIZE_Z, chunk_coord_x*CHUNK_SIZE_X, 0.0)
+	var heightmap = noise.get_image(CHUNK_SIZE_Z, CHUNK_SIZE_X)
 	
-	noise = OpenSimplexNoise.new()
+	noise = FastNoiseLite.new()
 	noise.seed = get_parent().world_seed
-	noise.octaves = 1
-	noise.period = 10.0
-	noise.persistence = 0.2
+	noise.fractal_octaves = 2
+	noise.frequency = 0.1
 	
-	var colour_map = noise.get_image(CHUNK_SIZE_Z, CHUNK_SIZE_X, \
-		Vector2(chunk_coord_z*CHUNK_SIZE_Z, chunk_coord_x*CHUNK_SIZE_X))
+	noise.offset = Vector3(chunk_coord_z*CHUNK_SIZE_Z, chunk_coord_x*CHUNK_SIZE_X, 0.0)
+	var colour_map = noise.get_image(CHUNK_SIZE_Z, CHUNK_SIZE_X,)
 	
 	
 	# water
 	for z in range(0, CHUNK_SIZE_Z):
 		for x in range(0, CHUNK_SIZE_X):
-			var a = colour_map.get_pixel(z,x).r * 0.3 - 0.2
+			var a = colour_map.get_pixel(z,x).r * 0.2 - 0.1
 			voxel_chunk_data.push_back(Color(0.5+a*1.5, 0.5+a*1.5, 0.8+a, 1.0))
 	
 	# Grass / sand / air
 	for y in range(11):
 		for z in range(0, CHUNK_SIZE_Z):
 			for x in range(0, CHUNK_SIZE_X):
-				var h = heightmap.get_pixel(z,x).r * 30 - 12
+				var h = heightmap.get_pixel(z,x).r * 20 - 8
 				if h >= y:
 					if y == 0: 
-						var a = colour_map.get_pixel(z,x).r * 0.4 - 0.3
+						var a = colour_map.get_pixel(z,x).r * 0.2 - 0.1
 						voxel_chunk_data.push_back(Color(1.0+a*1.2, 0.9+a, 0.7+a, 1.0))
 					else: 
-						var a = colour_map.get_pixel(z,x).r * 0.3 - 0.2
-						voxel_chunk_data.push_back(Color(0.3+a, 0.8+a, 0.3+a*1.3, 1.0))
+						var a = colour_map.get_pixel(z,x).r * 0.2 - 0.1
+						voxel_chunk_data.push_back(Color(0.3+a, 0.8+a*0.5, 0.25+a*1.3, 1.0))
 				else:
 					voxel_chunk_data.push_back(Color(0.0, 0.0, 0.0, 0.0))
 				
@@ -120,12 +118,12 @@ func createMesh(voxel_chunk_data: PackedColorArray):
 					
 					if voxel_x_idx > 0: 
 						voxel_to_neg_x = voxel_chunk_data[coord(voxel_x_idx-1, voxel_y_idx, voxel_z_idx)].a != 0	
-					if voxel_x_idx < 63:
+					if voxel_x_idx < CHUNK_SIZE_X-1:
 						voxel_to_pos_x = voxel_chunk_data[coord(voxel_x_idx+1, voxel_y_idx, voxel_z_idx)].a != 0	
 					
 					if voxel_y_idx > 0: 
 						voxel_to_neg_y = voxel_chunk_data[coord(voxel_x_idx, voxel_y_idx-1, voxel_z_idx)].a != 0	
-					if voxel_y_idx < 63: 
+					if voxel_y_idx < CHUNK_SIZE_Y-1: 
 						voxel_to_pos_y = voxel_chunk_data[coord(voxel_x_idx, voxel_y_idx+1, voxel_z_idx)].a != 0	
 										
 					
@@ -134,17 +132,17 @@ func createMesh(voxel_chunk_data: PackedColorArray):
 							if voxel_x_idx > 0: 
 								voxel_to_neg_z_left = voxel_chunk_data[coord(voxel_x_idx-1, voxel_y_idx, voxel_z_idx-1)].a != 0	
 							voxel_to_neg_z_right = voxel_chunk_data[coord(voxel_x_idx, voxel_y_idx, voxel_z_idx-1)].a != 0
-						if voxel_z_idx < 63: 
+						if voxel_z_idx < CHUNK_SIZE_Z-1: 
 							if voxel_x_idx > 0: 
 								voxel_to_pos_z_left = voxel_chunk_data[coord(voxel_x_idx-1, voxel_y_idx, voxel_z_idx+1)].a != 0	
 							voxel_to_pos_z_right = voxel_chunk_data[coord(voxel_x_idx, voxel_y_idx, voxel_z_idx+1)].a != 0
 					else:
 						if voxel_z_idx > 0: 
 							voxel_to_neg_z_left = voxel_chunk_data[coord(voxel_x_idx, voxel_y_idx, voxel_z_idx-1)].a != 0	
-							if voxel_x_idx < 63: voxel_to_neg_z_right = voxel_chunk_data[coord(voxel_x_idx+1, voxel_y_idx, voxel_z_idx-1)].a != 0
-						if voxel_z_idx < 63: 
+							if voxel_x_idx < CHUNK_SIZE_X-1: voxel_to_neg_z_right = voxel_chunk_data[coord(voxel_x_idx+1, voxel_y_idx, voxel_z_idx-1)].a != 0
+						if voxel_z_idx < CHUNK_SIZE_Z-1: 
 							voxel_to_pos_z_left = voxel_chunk_data[coord(voxel_x_idx, voxel_y_idx, voxel_z_idx+1)].a != 0	
-							if voxel_x_idx < 63: voxel_to_pos_z_right = voxel_chunk_data[coord(voxel_x_idx+1, voxel_y_idx, voxel_z_idx+1)].a != 0	
+							if voxel_x_idx < CHUNK_SIZE_X-1: voxel_to_pos_z_right = voxel_chunk_data[coord(voxel_x_idx+1, voxel_y_idx, voxel_z_idx+1)].a != 0	
 					
 					
 					if voxel_to_neg_x and voxel_to_pos_x and voxel_to_neg_y and voxel_to_pos_y and voxel_to_neg_z_left \
